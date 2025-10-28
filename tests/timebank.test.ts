@@ -3,14 +3,14 @@ import { GigService } from '../src/services/gigService';
 import { UserService } from '../src/services/userService';
 import { TimebankState } from '../src/state/timebank';
 import { User } from '../src/types/user';
-import { Gig, GigStatus, GigCategory, GigType } from '../src/types/gig';
+import { GigStatus, GigCategory, GigType } from '../src/types/gig';
 import { TransactionType, TransactionStatus } from '../src/types/transaction';
 
 describe('GigService Unit Tests', () => {
   let initialState: TimebankState;
   let alice: User;
   let bob: User;
-  let testGig: Omit<Gig, 'id' | 'createdAt' | 'status'>;
+  let testGig: Omit<import('../src/types/gig.js').Gig, 'id' | 'createdAt' | 'status'>;
   let mockContext: any;
 
   beforeEach(() => {
@@ -455,6 +455,41 @@ describe('GigService Unit Tests', () => {
                   expect(gigAfterRepeat.status).toBe(GigStatus.COMPLETED);
                 }
               }
+            }
+          }
+        }
+      }
+    });
+
+    it('should handle confirmation from AWAITING_CONFIRMATION status', () => {
+      const createResult = GigService.createGig(initialState, testGig, mockContext);
+      
+      if (createResult.newState && createResult.gigId) {
+        const acceptResult = GigService.acceptGig(createResult.newState, createResult.gigId, bob.id, mockContext);
+        
+        if (acceptResult.newState) {
+          // First confirmation from ASSIGNED (sets to AWAITING_CONFIRMATION)
+          const firstConfirm = GigService.confirmGigCompletion(acceptResult.newState, createResult.gigId, alice.id, mockContext);
+          expect(firstConfirm.success).toBe(true);
+          expect(firstConfirm.transactionId).toBeUndefined(); // No transaction yet
+          
+          if (firstConfirm.newState) {
+            const gigAfterFirst = firstConfirm.newState.gigs[createResult.gigId];
+            expect(gigAfterFirst.status).toBe(GigStatus.AWAITING_CONFIRMATION);
+            
+            // Confirmation from AWAITING_CONFIRMATION should complete and process payment
+            const secondConfirm = GigService.confirmGigCompletion(firstConfirm.newState, createResult.gigId, bob.id, mockContext);
+            expect(secondConfirm.success).toBe(true);
+            expect(secondConfirm.transactionId).toBeDefined();
+            
+            if (secondConfirm.newState) {
+              const completedGig = secondConfirm.newState.gigs[createResult.gigId];
+              expect(completedGig.status).toBe(GigStatus.COMPLETED);
+              expect(completedGig.completedAt).toBeDefined();
+              
+              // Verify payment was processed
+              expect(secondConfirm.newState.users[alice.id]?.timeCredits).toBe(70); // 100 - 30
+              expect(secondConfirm.newState.users[bob.id]?.timeCredits).toBe(80);   // 50 + 30
             }
           }
         }
