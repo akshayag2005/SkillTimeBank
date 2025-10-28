@@ -17,7 +17,10 @@ export enum TransactionType {
   ADMIN_AWARD = 'admin_award',
   BONUS = 'bonus',
   PENALTY = 'penalty',
-  REFUND = 'refund'
+  REFUND = 'refund',
+  WEEKLY_EVENT_REWARD = 'weekly_event_reward',
+  DISPUTE_REFUND = 'dispute_refund',
+  FRAUD_REVERSAL = 'fraud_reversal'
 }
 
 export enum TransactionStatus {

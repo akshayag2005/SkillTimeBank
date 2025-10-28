@@ -10,7 +10,13 @@
     "test": "vitest",
     "admin:award-credit": "npx tsx src/scripts/award-credit.ts",
     "admin:reset-economy": "npx tsx src/scripts/reset-economy.ts",
-    "admin:ban-user": "npx tsx src/scripts/ban-user.ts"
+    "admin:ban-user": "npx tsx src/scripts/ban-user.ts",
+    "kiro:generate-services": "npx tsx .kiro/hooks/generate-services.kiro.ts",
+    "kiro:generate-types": "echo 'Type generation from specs - placeholder'",
+    "kiro:sync-tests": "echo 'Test scaffold generation - placeholder'",
+    "kiro:regen-admin-docs": "echo 'Admin docs regeneration - placeholder'",
+    "demo:create-post": "npx tsx scripts/create-demo-post.ts",
+    "submit:assets": "npx tsx scripts/submit-assets.ts"
   },
   "keywords": [
     "devvit",
