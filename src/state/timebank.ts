@@ -1,11 +1,21 @@
 import { User } from '../types/user.js';
 import { Gig } from '../types/gig.js';
 import { Transaction } from '../types/transaction.js';
+import { WeeklyEvent } from '../types/event.js';
+import { LeaderboardEntry, UserStats, CommunityAnalytics } from '../types/leaderboard.js';
+import { ModerationAction, Dispute, UserModerationStatus } from '../types/moderation.js';
 
 export interface TimebankState {
   users: Record<string, User>;
   gigs: Record<string, Gig>;
   transactions: Record<string, Transaction>;
+  weeklyEvents: Record<string, WeeklyEvent>;
+  leaderboards: Record<string, LeaderboardEntry[]>;
+  userStats: Record<string, UserStats>;
+  communityAnalytics?: CommunityAnalytics;
+  moderationActions: Record<string, ModerationAction>;
+  disputes: Record<string, Dispute>;
+  userModerationStatus: Record<string, UserModerationStatus>;
   currentUser?: string;
 }
 
@@ -13,6 +23,12 @@ const initialState: TimebankState = {
   users: {},
   gigs: {},
   transactions: {},
+  weeklyEvents: {},
+  leaderboards: {},
+  userStats: {},
+  moderationActions: {},
+  disputes: {},
+  userModerationStatus: {},
   currentUser: undefined
 };
 
