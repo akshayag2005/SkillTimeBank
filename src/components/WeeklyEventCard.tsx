@@ -45,7 +45,7 @@ export function WeeklyEventCard({ event, currentUserId }: WeeklyEventCardProps) 
       borderColor={event.status === EventStatus.COMPLETED ? '#34d399' : '#3b82f6'}
     >
       {/* Header */}
-      <hstack width="100%" alignment="space-between middle">
+      <hstack width="100%" alignment="start middle">
         <hstack gap="small" alignment="center middle">
           <text size="large">{getEventIcon(event.theme)}</text>
           <text size="large" weight="bold" color="#f1f5f9">
@@ -69,7 +69,7 @@ export function WeeklyEventCard({ event, currentUserId }: WeeklyEventCardProps) 
 
       {/* Progress Bar */}
       <vstack width="100%" gap="small">
-        <hstack width="100%" alignment="space-between middle">
+        <hstack width="100%" alignment="start middle">
           <text size="small" color="#cbd5e1">
             Progress
           </text>
@@ -94,16 +94,16 @@ export function WeeklyEventCard({ event, currentUserId }: WeeklyEventCardProps) 
       </vstack>
 
       {/* Participants & Rewards */}
-      <hstack width="100%" alignment="space-between middle">
+      <hstack width="100%" alignment="start middle">
         <vstack gap="none">
           <text size="small" color="#cbd5e1">
             {event.participants.length} participants
           </text>
-          {isParticipant && (
+          {isParticipant ? (
             <text size="small" color="#10b981" weight="bold">
               ✓ You're participating!
             </text>
-          )}
+          ) : null}
         </vstack>
         
         <vstack alignment="end middle" gap="none">

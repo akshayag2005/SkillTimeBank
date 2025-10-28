@@ -75,13 +75,29 @@ function loadState(): TimebankState {
       users: {},
       gigs: {},
       transactions: {},
-      currentUser: undefined
+      currentUser: undefined,
+      weeklyEvents: {},
+      leaderboards: {},
+      userStats: {},
+      moderationActions: {},
+      disputes: {},
+      userModerationStatus: {}
     };
   }
 
   try {
     const stateData = readFileSync(STATE_FILE_PATH, 'utf-8');
-    return JSON.parse(stateData);
+    const state = JSON.parse(stateData);
+    // Add missing properties if state is from older version
+    return {
+      ...state,
+      weeklyEvents: state.weeklyEvents || {},
+      leaderboards: state.leaderboards || {},
+      userStats: state.userStats || {},
+      moderationActions: state.moderationActions || {},
+      disputes: state.disputes || {},
+      userModerationStatus: state.userModerationStatus || {}
+    };
   } catch (error) {
     console.error('Error loading state:', error);
     process.exit(1);

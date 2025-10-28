@@ -12,14 +12,14 @@ interface PostGigProps {
 
 export function PostGig({ context }: PostGigProps) {
   const [state, setState] = useTimebankState();
-  const [title, setTitle] = Devvit.useState('');
-  const [description, setDescription] = Devvit.useState('');
-  const [category, setCategory] = Devvit.useState<GigCategory>(GigCategory.OTHER);
-  const [gigType, setGigType] = Devvit.useState<GigType>(GigType.FIND_HELP);
-  const [timeCredits, setTimeCredits] = Devvit.useState('');
-  const [duration, setDuration] = Devvit.useState('');
-  const [isRemote, setIsRemote] = Devvit.useState(false);
-  const [isSubmitting, setIsSubmitting] = Devvit.useState(false);
+  const [title, setTitle] = context.useState('');
+  const [description, setDescription] = context.useState('');
+  const [category, setCategory] = context.useState(GigCategory.OTHER);
+  const [gigType, setGigType] = context.useState(GigType.FIND_HELP);
+  const [timeCredits, setTimeCredits] = context.useState('');
+  const [duration, setDuration] = context.useState('');
+  const [isRemote, setIsRemote] = context.useState(false);
+  const [isSubmitting, setIsSubmitting] = context.useState(false);
 
   const categories = [
     { value: GigCategory.TECH, label: 'Technology' },
@@ -106,28 +106,59 @@ export function PostGig({ context }: PostGigProps) {
         borderColor="#e2e8f0"
       >
         {/* Title */}
-        <vstack gap="xsmall">
+        <vstack gap="small">
           <text size="small" weight="bold" color="#374151">
             Gig Title *
           </text>
-          <textInput
-            placeholder="e.g., Help with React development"
-            value={title}
-            onChangeText={setTitle}
-          />
+          <hstack 
+            backgroundColor="#f8fafc" 
+            padding="small" 
+            cornerRadius="small"
+            border="thin"
+            borderColor="#e2e8f0"
+            onPress={() => {
+              context.ui.showForm({
+                title: 'Enter Gig Title',
+                fields: [{ name: 'title', label: 'Title', type: 'string', defaultValue: title }],
+                acceptLabel: 'Save',
+                cancelLabel: 'Cancel'
+              }, (values: any) => {
+                if (values.title) setTitle(values.title as string);
+              });
+            }}
+          >
+            <text size="small" color={title ? "#1e293b" : "#94a3b8"}>
+              {title || "e.g., Help with React development"}
+            </text>
+          </hstack>
         </vstack>
 
         {/* Description */}
-        <vstack gap="xsmall">
+        <vstack gap="small">
           <text size="small" weight="bold" color="#374151">
             Description *
           </text>
-          <textInput
-            placeholder="Describe what you need help with..."
-            value={description}
-            onChangeText={setDescription}
-            multiline
-          />
+          <hstack 
+            backgroundColor="#f8fafc" 
+            padding="small" 
+            cornerRadius="small"
+            border="thin"
+            borderColor="#e2e8f0"
+            onPress={() => {
+              context.ui.showForm({
+                title: 'Enter Description',
+                fields: [{ name: 'description', label: 'Description', type: 'paragraph', defaultValue: description }],
+                acceptLabel: 'Save',
+                cancelLabel: 'Cancel'
+              }, (values: any) => {
+                if (values.description) setDescription(values.description as string);
+              });
+            }}
+          >
+            <text size="small" color={description ? "#1e293b" : "#94a3b8"}>
+              {description || "Describe what you need help with..."}
+            </text>
+          </hstack>
         </vstack>
 
         {/* Gig Type */}
@@ -158,7 +189,7 @@ export function PostGig({ context }: PostGigProps) {
           <text size="small" weight="bold" color="#374151">
             Category *
           </text>
-          <hstack gap="small" wrap>
+          <hstack gap="small">
             {categories.map((cat) => (
               <button
                 key={cat.value}
@@ -174,26 +205,56 @@ export function PostGig({ context }: PostGigProps) {
 
         {/* Time Credits and Duration */}
         <hstack gap="medium" width="100%">
-          <vstack gap="xsmall" grow>
+          <vstack gap="small" grow>
             <text size="small" weight="bold" color="#374151">
               Time Credits *
             </text>
-            <textInput
-              placeholder="60"
-              value={timeCredits}
-              onChangeText={setTimeCredits}
-            />
+            <hstack 
+              backgroundColor="#f8fafc" 
+              padding="small" 
+              cornerRadius="small"
+              border="thin"
+              borderColor="#e2e8f0"
+              onPress={() => {
+                context.ui.showForm({
+                  title: 'Enter Time Credits',
+                  fields: [{ name: 'credits', label: 'Credits', type: 'number', defaultValue: timeCredits ? parseInt(timeCredits) : undefined }],
+                  acceptLabel: 'Save'
+                }, (values: any) => {
+                  if (values.credits) setTimeCredits(String(values.credits));
+                });
+              }}
+            >
+              <text size="small" color={timeCredits ? "#1e293b" : "#94a3b8"}>
+                {timeCredits || "60"}
+              </text>
+            </hstack>
           </vstack>
           
-          <vstack gap="xsmall" grow>
+          <vstack gap="small" grow>
             <text size="small" weight="bold" color="#374151">
               Duration (minutes) *
             </text>
-            <textInput
-              placeholder="60"
-              value={duration}
-              onChangeText={setDuration}
-            />
+            <hstack 
+              backgroundColor="#f8fafc" 
+              padding="small" 
+              cornerRadius="small"
+              border="thin"
+              borderColor="#e2e8f0"
+              onPress={() => {
+                context.ui.showForm({
+                  title: 'Enter Duration',
+                  fields: [{ name: 'duration', label: 'Duration (minutes)', type: 'number', defaultValue: duration ? parseInt(duration) : undefined }],
+                  acceptLabel: 'Save'
+                }, (values: any) => {
+                  if (values.duration) setDuration(String(values.duration));
+                });
+              }}
+            >
+              <text size="small" color={duration ? "#1e293b" : "#94a3b8"}>
+                {duration || "60"}
+              </text>
+            </hstack>
           </vstack>
         </hstack>
 

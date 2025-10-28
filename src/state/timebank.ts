@@ -41,7 +41,7 @@ export function getInitialState(): TimebankState {
 // This function should be called from components where Devvit is available
 // Components should import Devvit and use: const [state, setState] = createTimebankState(Devvit);
 export function createTimebankState(Devvit: any) {
-  return Devvit.useState<TimebankState>(TIMEBANK_STATE_KEY, initialState);
+  return Devvit.useState(TIMEBANK_STATE_KEY, initialState);
 }
 
 // Legacy function for backward compatibility - components should migrate to createTimebankState

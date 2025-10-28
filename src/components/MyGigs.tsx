@@ -14,8 +14,8 @@ interface MyGigsProps {
 
 export function MyGigs({ context }: MyGigsProps) {
   const [state, setState] = useTimebankState();
-  const [activeTab, setActiveTab] = Devvit.useState<'posted' | 'applied' | 'transactions'>('posted');
-  const [processingGig, setProcessingGig] = Devvit.useState<string | null>(null);
+  const [activeTab, setActiveTab] = context.useState('posted');
+  const [processingGig, setProcessingGig] = context.useState(null);
 
   const handleStartGig = async (gigId: string) => {
     if (processingGig) return;
@@ -135,8 +135,8 @@ export function MyGigs({ context }: MyGigsProps) {
     <vstack width="100%" gap="medium">
       {/* Header */}
       <vstack gap="small">
-        <hstack width="100%" alignment="space-between">
-          <vstack gap="xsmall">
+        <hstack width="100%" alignment="start middle">
+          <vstack gap="small">
             <text size="large" weight="bold" color="#1e293b">
               My Gigs
             </text>
@@ -144,8 +144,9 @@ export function MyGigs({ context }: MyGigsProps) {
               Manage your gigs and transactions
             </text>
           </vstack>
+          <spacer grow />
           {currentUser && (
-            <vstack alignment="end">
+            <vstack alignment="end middle">
               <text size="small" color="#64748b">Balance</text>
               <text size="large" weight="bold" color="#10b981">
                 {currentUser.timeCredits} TC
@@ -200,7 +201,7 @@ export function MyGigs({ context }: MyGigsProps) {
                 border="thin"
                 borderColor="#e2e8f0"
               >
-                <hstack width="100%" alignment="space-between">
+                <hstack width="100%" alignment="start middle">
                   <text size="medium" weight="bold" color="#1e293b">
                     {gig.title}
                   </text>
@@ -211,7 +212,7 @@ export function MyGigs({ context }: MyGigsProps) {
                   {gig.description}
                 </text>
                 
-                <hstack width="100%" alignment="space-between">
+                <hstack width="100%" alignment="start middle">
                   <hstack gap="small" alignment="center">
                     <text size="small" color="#10b981" weight="bold">
                       {gig.timeCreditsOffered} credits
@@ -253,7 +254,7 @@ export function MyGigs({ context }: MyGigsProps) {
                 border="thin"
                 borderColor="#e2e8f0"
               >
-                <hstack width="100%" alignment="space-between">
+                <hstack width="100%" alignment="start middle">
                   <text size="medium" weight="bold" color="#1e293b">
                     {gig.title}
                   </text>
@@ -264,7 +265,7 @@ export function MyGigs({ context }: MyGigsProps) {
                   {gig.description}
                 </text>
                 
-                <hstack width="100%" alignment="space-between">
+                <hstack width="100%" alignment="start middle">
                   <hstack gap="small" alignment="center">
                     <text size="small" color="#10b981" weight="bold">
                       {gig.timeCreditsOffered} credits
@@ -337,17 +338,17 @@ export function MyGigs({ context }: MyGigsProps) {
                     </text>
                   </hstack>
                   
-                  {transaction.description && (
+                  {transaction.description ? (
                     <text size="small" color="#64748b">
                       {transaction.description}
                     </text>
-                  )}
+                  ) : null}
                   
-                  {gig && (
+                  {gig ? (
                     <text size="small" color="#64748b">
                       Gig: {gig.title}
                     </text>
-                  )}
+                  ) : null}
                   
                   {otherUser && otherUser.id !== 'system' && (
                     <text size="small" color="#64748b">

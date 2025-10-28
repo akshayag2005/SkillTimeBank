@@ -17,9 +17,9 @@ interface TimebankAppProps {
 
 export function TimebankApp({ context }: TimebankAppProps) {
   const [state, setState] = useTimebankState();
-  const [currentTab, setCurrentTab] = Devvit.useState<TabType>('splash');
-  const [hasEntered, setHasEntered] = Devvit.useState(false);
-  const [isInitializing, setIsInitializing] = Devvit.useState(true);
+  const [currentTab, setCurrentTab] = context.useState('splash');
+  const [hasEntered, setHasEntered] = context.useState(false);
+  const [isInitializing, setIsInitializing] = context.useState(true);
 
   const handleEnterTimebank = async () => {
     setIsInitializing(true);

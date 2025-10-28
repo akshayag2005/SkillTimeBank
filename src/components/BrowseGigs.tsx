@@ -13,8 +13,8 @@ interface BrowseGigsProps {
 
 export function BrowseGigs({ context }: BrowseGigsProps) {
   const [state, setState] = useTimebankState();
-  const [selectedCategory, setSelectedCategory] = Devvit.useState<string>('all');
-  const [acceptingGig, setAcceptingGig] = Devvit.useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = context.useState('all');
+  const [acceptingGig, setAcceptingGig] = context.useState(null);
 
   const handleAcceptGig = async (gigId: string) => {
     if (acceptingGig) return;
@@ -71,7 +71,7 @@ export function BrowseGigs({ context }: BrowseGigsProps) {
       </vstack>
 
       {/* Category Filter */}
-      <hstack gap="small" wrap>
+      <hstack gap="small">
         {categories.map((category) => (
           <button
             key={category}
@@ -103,10 +103,11 @@ export function BrowseGigs({ context }: BrowseGigsProps) {
               border="thin"
               borderColor="#e2e8f0"
             >
-              <hstack width="100%" alignment="space-between">
+              <hstack width="100%" alignment="start middle">
                 <text size="medium" weight="bold" color="#1e293b">
                   {gig.title}
                 </text>
+                <spacer size="large" />
                 <StatusChip status={gig.status} />
               </hstack>
               
@@ -114,8 +115,8 @@ export function BrowseGigs({ context }: BrowseGigsProps) {
                 {gig.description}
               </text>
               
-              <hstack width="100%" alignment="space-between">
-                <hstack gap="small" alignment="center">
+              <hstack width="100%" alignment="start middle">
+                <hstack gap="small" alignment="center middle">
                   <text size="small" color="#10b981" weight="bold">
                     {gig.timeCreditsOffered} credits
                   </text>

@@ -83,7 +83,7 @@ export function LeaderboardDisplay({ entries, category, currentUserId }: Leaderb
                 border="thin"
                 borderColor={isCurrentUser ? '#3b82f6' : isTopThree ? '#f59e0b' : '#e2e8f0'}
               >
-                <hstack width="100%" alignment="space-between middle">
+                <hstack width="100%" alignment="start middle">
                   {/* Rank & Username */}
                   <hstack gap="medium" alignment="center middle" grow>
                     <text 
@@ -103,12 +103,12 @@ export function LeaderboardDisplay({ entries, category, currentUserId }: Leaderb
                       
                       {/* Additional metadata for diverse skillers */}
                       {category === LeaderboardCategory.DIVERSE_SKILLERS && 
-                       entry.metadata?.uniqueCategories && (
+                       entry.metadata?.uniqueCategories ? (
                         <text size="small" color="#64748b">
                           {entry.metadata.uniqueCategories.slice(0, 3).join(', ')}
-                          {entry.metadata.uniqueCategories.length > 3 && '...'}
+                          {entry.metadata.uniqueCategories.length > 3 ? '...' : ''}
                         </text>
-                      )}
+                      ) : null}
                     </vstack>
                   </hstack>
 
@@ -126,7 +126,7 @@ export function LeaderboardDisplay({ entries, category, currentUserId }: Leaderb
       </vstack>
 
       {/* Footer - User's position if not in top 10 */}
-      {currentUserId && !entries.some(e => e.userId === currentUserId) && (
+      {currentUserId && !entries.some(e => e.userId === currentUserId) ? (
         <vstack 
           width="100%" 
           padding="medium" 
@@ -138,7 +138,7 @@ export function LeaderboardDisplay({ entries, category, currentUserId }: Leaderb
             You're not ranked yet. Keep helping to make the leaderboard!
           </text>
         </vstack>
-      )}
+      ) : null}
     </vstack>
   );
 }
