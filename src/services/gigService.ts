@@ -117,22 +117,24 @@ export class GigService {
         return { success: false, error: 'Only gig creator or assignee can confirm completion' };
       }
 
-      // Check if gig is in correct status
-      if (gig.status !== GigStatus.ASSIGNED && gig.status !== GigStatus.IN_PROGRESS) {
-        return { success: false, error: 'Gig must be assigned or in progress to confirm completion' };
-      }
-
       // Check if already completed (idempotent)
       if (gig.status === GigStatus.COMPLETED) {
         return { success: true, newState: state }; // Ignore repeat confirmations
+      }
+
+      // Check if gig is in correct status
+      if (gig.status !== GigStatus.ASSIGNED && gig.status !== GigStatus.IN_PROGRESS && gig.status !== GigStatus.AWAITING_CONFIRMATION) {
+        return { success: false, error: 'Gig must be assigned, in progress, or awaiting confirmation to confirm completion' };
       }
 
       // Update gig to awaiting confirmation or completed
       let newStatus: GigStatus;
       if (gig.status === GigStatus.ASSIGNED) {
         newStatus = GigStatus.AWAITING_CONFIRMATION;
-      } else {
+      } else if (gig.status === GigStatus.AWAITING_CONFIRMATION || gig.status === GigStatus.IN_PROGRESS) {
         newStatus = GigStatus.COMPLETED;
+      } else {
+        newStatus = gig.status; // Should not reach here due to earlier validation
       }
 
       const updatedGig: Gig = {

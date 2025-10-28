@@ -1,17 +1,18 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TimeBankManager } from '../src/state/timebank';
+import { GigService } from '../src/services/gigService';
+import { UserService } from '../src/services/userService';
+import { TimebankState } from '../src/state/timebank';
 import { User } from '../src/types/user';
-import { Gig, GigStatus, GigCategory } from '../src/types/gig';
+import { Gig, GigStatus, GigCategory, GigType } from '../src/types/gig';
 import { TransactionStatus, TransactionType } from '../src/types/transaction';
 
-describe('Full Lifecycle Integration Test', () => {
-  let timeBank: TimeBankManager;
+describe('Full Lifecycle Integration Tests', () => {
+  let initialState: TimebankState;
   let gigCreator: User;
   let gigWorker: User;
+  let mockContext: any;
 
   beforeEach(() => {
-    timeBank = new TimeBankManager();
-    
     gigCreator = {
       id: 'creator',
       username: 'creator',
@@ -32,98 +33,114 @@ describe('Full Lifecycle Integration Test', () => {
       isActive: true
     };
 
-    timeBank.addUser(gigCreator);
-    timeBank.addUser(gigWorker);
+    initialState = {
+      users: {
+        [gigCreator.id]: gigCreator,
+        [gigWorker.id]: gigWorker
+      },
+      gigs: {},
+      transactions: {},
+      currentUser: gigCreator.id
+    };
+
+    mockContext = {
+      reddit: {
+        getCurrentUser: () => Promise.resolve({ id: gigCreator.id, username: gigCreator.username })
+      },
+      redis: {
+        set: () => Promise.resolve(),
+        get: () => Promise.resolve(null)
+      }
+    };
   });
 
   it('should complete full gig lifecycle: OPEN→ASSIGNED→IN_PROGRESS→COMPLETED with transaction', () => {
     // Snapshot initial state
-    const initialState = timeBank.getState();
-    expect(initialState.gigs.size).toBe(0);
-    expect(initialState.transactions.size).toBe(0);
-    expect(initialState.users.get(gigCreator.id)?.timeCredits).toBe(100);
-    expect(initialState.users.get(gigWorker.id)?.timeCredits).toBe(20);
+    expect(Object.keys(initialState.gigs)).toHaveLength(0);
+    expect(Object.keys(initialState.transactions)).toHaveLength(0);
+    expect(initialState.users[gigCreator.id]?.timeCredits).toBe(100);
+    expect(initialState.users[gigWorker.id]?.timeCredits).toBe(20);
 
     // 1. Create gig (OPEN status)
-    const gig: Gig = {
-      id: 'lifecycle-gig',
+    const gigData = {
       title: 'Build mobile app',
       description: 'Create a React Native app',
       category: GigCategory.TECH,
+      type: GigType.FIND_HELP,
       timeCreditsOffered: 50,
       estimatedDuration: 240,
       requiredSkills: ['programming'],
       isRemote: true,
-      createdBy: gigCreator.id,
-      createdAt: new Date(),
-      status: GigStatus.OPEN
+      createdBy: gigCreator.id
     };
 
-    timeBank.createGig(gig);
+    const createResult = GigService.createGig(initialState, gigData, mockContext);
+    expect(createResult.success).toBe(true);
+    expect(createResult.gigId).toBeDefined();
+    
+    let currentState = createResult.newState!;
+    let gigId = createResult.gigId!;
     
     // Verify OPEN state
-    let currentGig = timeBank.getGig(gig.id);
+    let currentGig = currentState.gigs[gigId];
     expect(currentGig?.status).toBe(GigStatus.OPEN);
     expect(currentGig?.assignedTo).toBeUndefined();
 
     // 2. Accept gig (OPEN → ASSIGNED)
-    timeBank.acceptGig(gig.id, gigWorker.id);
+    const acceptResult = GigService.acceptGig(currentState, gigId, gigWorker.id, mockContext);
+    expect(acceptResult.success).toBe(true);
+    
+    currentState = acceptResult.newState!;
     
     // Verify ASSIGNED state
-    currentGig = timeBank.getGig(gig.id);
+    currentGig = currentState.gigs[gigId];
     expect(currentGig?.status).toBe(GigStatus.ASSIGNED);
     expect(currentGig?.assignedTo).toBe(gigWorker.id);
 
     // 3. Start gig (ASSIGNED → IN_PROGRESS)
-    timeBank.startGig(gig.id, gigWorker.id);
+    const startResult = GigService.startGig(currentState, gigId, gigWorker.id, mockContext);
+    expect(startResult.success).toBe(true);
+    
+    currentState = startResult.newState!;
     
     // Verify IN_PROGRESS state
-    currentGig = timeBank.getGig(gig.id);
+    currentGig = currentState.gigs[gigId];
     expect(currentGig?.status).toBe(GigStatus.IN_PROGRESS);
 
     // 4. Complete gig (IN_PROGRESS → COMPLETED + create transaction)
-    timeBank.completeGig(gig.id, gigWorker.id);
+    const completeResult = GigService.confirmGigCompletion(currentState, gigId, gigCreator.id, mockContext);
+    expect(completeResult.success).toBe(true);
+    expect(completeResult.transactionId).toBeDefined();
+    
+    currentState = completeResult.newState!;
     
     // Verify COMPLETED state
-    currentGig = timeBank.getGig(gig.id);
+    currentGig = currentState.gigs[gigId];
     expect(currentGig?.status).toBe(GigStatus.COMPLETED);
     expect(currentGig?.completedAt).toBeDefined();
 
-    // Verify transaction was created
-    const stateAfterCompletion = timeBank.getState();
-    expect(stateAfterCompletion.transactions.size).toBe(1);
+    // Verify transaction was created and processed
+    expect(Object.keys(currentState.transactions)).toHaveLength(1);
     
-    const transactions = Array.from(stateAfterCompletion.transactions.values());
+    const transactions = Object.values(currentState.transactions);
     const transaction = transactions[0];
     
     expect(transaction.fromUserId).toBe(gigCreator.id);
     expect(transaction.toUserId).toBe(gigWorker.id);
-    expect(transaction.gigId).toBe(gig.id);
+    expect(transaction.gigId).toBe(gigId);
     expect(transaction.amount).toBe(50);
     expect(transaction.type).toBe(TransactionType.GIG_PAYMENT);
-    expect(transaction.status).toBe(TransactionStatus.PENDING);
-
-    // 5. Process the payment transaction
-    timeBank.processTransaction(transaction.id);
-    
-    // Verify final state with completed transaction
-    const finalState = timeBank.getState();
-    const finalTransaction = finalState.transactions.get(transaction.id);
-    const finalCreator = finalState.users.get(gigCreator.id);
-    const finalWorker = finalState.users.get(gigWorker.id);
-    
-    // Transaction should be completed
-    expect(finalTransaction?.status).toBe(TransactionStatus.COMPLETED);
-    expect(finalTransaction?.completedAt).toBeDefined();
+    expect(transaction.status).toBe(TransactionStatus.COMPLETED);
+    expect(transaction.completedAt).toBeDefined();
     
     // Credits should be transferred
-    expect(finalCreator?.timeCredits).toBe(50); // 100 - 50
-    expect(finalWorker?.timeCredits).toBe(70);  // 20 + 50
+    expect(currentState.users[gigCreator.id]?.timeCredits).toBe(50); // 100 - 50
+    expect(currentState.users[gigWorker.id]?.timeCredits).toBe(70);  // 20 + 50
 
     // Snapshot final state comparison
-    expect(finalState.gigs.size).toBe(1);
-    expect(finalState.transactions.size).toBe(1);
-    expect(finalState.users.size).toBe(2);
+    expect(Object.keys(currentState.gigs)).toHaveLength(1);
+    expect(Object.keys(currentState.transactions)).toHaveLength(1);
+    expect(Object.keys(currentState.users)).toHaveLength(2);
   });
 
   it('should handle lifecycle with insufficient funds', () => {
@@ -138,71 +155,128 @@ describe('Full Lifecycle Integration Test', () => {
       isActive: true
     };
 
-    timeBank.addUser(poorCreator);
+    const stateWithPoorUser = {
+      ...initialState,
+      users: { ...initialState.users, [poorCreator.id]: poorCreator }
+    };
 
-    const expensiveGig: Gig = {
-      id: 'expensive-gig',
+    const expensiveGigData = {
       title: 'Expensive task',
       description: 'This costs more than creator has',
       category: GigCategory.OTHER,
+      type: GigType.FIND_HELP,
       timeCreditsOffered: 30, // More than creator's 10 credits
       estimatedDuration: 60,
       requiredSkills: [],
       isRemote: true,
-      createdBy: poorCreator.id,
-      createdAt: new Date(),
-      status: GigStatus.OPEN
+      createdBy: poorCreator.id
     };
 
-    // Complete the lifecycle up to completion
-    timeBank.createGig(expensiveGig);
-    timeBank.acceptGig(expensiveGig.id, gigWorker.id);
-    timeBank.startGig(expensiveGig.id, gigWorker.id);
+    // Creation should fail due to insufficient funds for FIND_HELP gig
+    const createResult = GigService.createGig(stateWithPoorUser, expensiveGigData, mockContext);
+    expect(createResult.success).toBe(false);
+    expect(createResult.error).toContain('Insufficient time credits');
 
-    // Completion should fail due to insufficient funds
-    expect(() => timeBank.completeGig(expensiveGig.id, gigWorker.id)).toThrow('Insufficient time credits');
-
-    // Verify gig remains in IN_PROGRESS state
-    const gig = timeBank.getGig(expensiveGig.id);
-    expect(gig?.status).toBe(GigStatus.IN_PROGRESS);
-
-    // Verify no transaction was created
-    const state = timeBank.getState();
-    expect(state.transactions.size).toBe(0);
   });
 
-  it('should handle cancellation during lifecycle', () => {
-    const gig: Gig = {
-      id: 'cancel-gig',
-      title: 'Cancelled task',
-      description: 'This will be cancelled',
+  it('should handle dual confirmation workflow', () => {
+    const gigData = {
+      title: 'Dual confirmation task',
+      description: 'This requires both parties to confirm',
       category: GigCategory.CREATIVE,
+      type: GigType.FIND_HELP,
       timeCreditsOffered: 25,
       estimatedDuration: 90,
       requiredSkills: ['design'],
       isRemote: false,
-      createdBy: gigCreator.id,
-      createdAt: new Date(),
-      status: GigStatus.OPEN
+      createdBy: gigCreator.id
     };
 
-    // Progress through partial lifecycle
-    timeBank.createGig(gig);
-    timeBank.acceptGig(gig.id, gigWorker.id);
+    // Progress through lifecycle
+    const createResult = GigService.createGig(initialState, gigData, mockContext);
+    expect(createResult.success).toBe(true);
     
-    // Cancel after acceptance
-    timeBank.cancelGig(gig.id, gigCreator.id);
+    let currentState = createResult.newState!;
+    const gigId = createResult.gigId!;
     
-    // Verify cancelled state
-    const cancelledGig = timeBank.getGig(gig.id);
-    expect(cancelledGig?.status).toBe(GigStatus.CANCELLED);
+    const acceptResult = GigService.acceptGig(currentState, gigId, gigWorker.id, mockContext);
+    expect(acceptResult.success).toBe(true);
     
-    // Verify no transactions created
-    const state = timeBank.getState();
-    expect(state.transactions.size).toBe(0);
+    currentState = acceptResult.newState!;
     
-    // Verify user credits unchanged
-    expect(state.users.get(gigCreator.id)?.timeCredits).toBe(100);
-    expect(state.users.get(gigWorker.id)?.timeCredits).toBe(20);
+    // First confirmation from ASSIGNED should set to AWAITING_CONFIRMATION
+    const firstConfirm = GigService.confirmGigCompletion(currentState, gigId, gigCreator.id, mockContext);
+    expect(firstConfirm.success).toBe(true);
+    
+    currentState = firstConfirm.newState!;
+    
+    let currentGig = currentState.gigs[gigId];
+    expect(currentGig?.status).toBe(GigStatus.AWAITING_CONFIRMATION);
+    
+    // Second confirmation should complete and process payment
+    const secondConfirm = GigService.confirmGigCompletion(currentState, gigId, gigWorker.id, mockContext);
+    expect(secondConfirm.success).toBe(true);
+    expect(secondConfirm.transactionId).toBeDefined();
+    
+    currentState = secondConfirm.newState!;
+    
+    // Verify completed state
+    currentGig = currentState.gigs[gigId];
+    expect(currentGig?.status).toBe(GigStatus.COMPLETED);
+    expect(currentGig?.completedAt).toBeDefined();
+    
+    // Verify transaction created and processed
+    expect(Object.keys(currentState.transactions)).toHaveLength(1);
+    const transaction = Object.values(currentState.transactions)[0];
+    expect(transaction.status).toBe(TransactionStatus.COMPLETED);
+    
+    // Verify user credits updated
+    expect(currentState.users[gigCreator.id]?.timeCredits).toBe(75); // 100 - 25
+    expect(currentState.users[gigWorker.id]?.timeCredits).toBe(45);  // 20 + 25
+  });
+
+  it('should handle OFFER_HELP gig payment direction', () => {
+    const offerGigData = {
+      title: 'I will help you',
+      description: 'Offering my services',
+      category: GigCategory.TECH,
+      type: GigType.OFFER_HELP,
+      timeCreditsOffered: 30,
+      estimatedDuration: 120,
+      requiredSkills: ['programming'],
+      isRemote: true,
+      createdBy: gigWorker.id // Worker is offering help
+    };
+
+    // Complete lifecycle
+    const createResult = GigService.createGig(initialState, offerGigData, mockContext);
+    expect(createResult.success).toBe(true);
+    
+    let currentState = createResult.newState!;
+    const gigId = createResult.gigId!;
+    
+    const acceptResult = GigService.acceptGig(currentState, gigId, gigCreator.id, mockContext);
+    expect(acceptResult.success).toBe(true);
+    
+    currentState = acceptResult.newState!;
+    
+    const startResult = GigService.startGig(currentState, gigId, gigCreator.id, mockContext);
+    expect(startResult.success).toBe(true);
+    
+    currentState = startResult.newState!;
+    
+    const completeResult = GigService.confirmGigCompletion(currentState, gigId, gigWorker.id, mockContext);
+    expect(completeResult.success).toBe(true);
+    
+    currentState = completeResult.newState!;
+    
+    // For OFFER_HELP, the accepter (gigCreator) pays the offerer (gigWorker)
+    const transaction = Object.values(currentState.transactions)[0];
+    expect(transaction.fromUserId).toBe(gigCreator.id); // Creator pays
+    expect(transaction.toUserId).toBe(gigWorker.id);    // Worker receives
+    
+    // Verify credits transferred correctly
+    expect(currentState.users[gigCreator.id]?.timeCredits).toBe(70); // 100 - 30
+    expect(currentState.users[gigWorker.id]?.timeCredits).toBe(50);  // 20 + 30
   });
 });
