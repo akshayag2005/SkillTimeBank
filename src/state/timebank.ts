@@ -1,4 +1,3 @@
-import { Devvit } from '@devvit/kit';
 import { User } from '../types/user.js';
 import { Gig } from '../types/gig.js';
 import { Transaction } from '../types/transaction.js';
@@ -19,8 +18,20 @@ const initialState: TimebankState = {
 
 export const TIMEBANK_STATE_KEY = 'timebank:state';
 
-export function useTimebankState() {
+export function getInitialState(): TimebankState {
+  return initialState;
+}
+
+// This function should be called from components where Devvit is available
+// Components should import Devvit and use: const [state, setState] = createTimebankState(Devvit);
+export function createTimebankState(Devvit: any) {
   return Devvit.useState<TimebankState>(TIMEBANK_STATE_KEY, initialState);
+}
+
+// Legacy function for backward compatibility - components should migrate to createTimebankState
+export function useTimebankState(): [TimebankState, (state: TimebankState) => void] {
+  // This is a placeholder that will be replaced by the component's implementation
+  return [initialState, () => {}];
 }
 
 export async function saveState(state: TimebankState, context: any) {

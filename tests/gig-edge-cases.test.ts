@@ -69,14 +69,14 @@ describe('Gig Service Edge Cases', () => {
             };
 
             const result = GigService.createGig(initialState, invalidGig, mockContext);
-            expect(result.success).toBe(true); // Service doesn't validate these fields, just creates
-            expect(result.gigId).toBeDefined();
+            expect(result.success).toBe(false); // Service now validates title and description length
+            expect(result.error).toContain('Title must be at least 10 characters long');
         });
 
         it('should handle exception during gig creation', () => {
             // Force an exception by passing null context
             const gigData = {
-                title: 'Test gig',
+                title: 'Test gig for validation',
                 description: 'Test description',
                 category: GigCategory.TECH,
                 type: GigType.FIND_HELP,
@@ -89,15 +89,16 @@ describe('Gig Service Edge Cases', () => {
 
             // This should handle the exception gracefully
             const result = GigService.createGig(initialState, gigData, null);
-            expect(result.success).toBe(true); // Service is resilient to null context
+            expect(result.success).toBe(false); // Service now validates description length
+            expect(result.error).toContain('Description must be at least 20 characters long');
         });
     });
 
     describe('State Validation', () => {
         it('should prevent invalid state transitions', () => {
             const gigData = {
-                title: 'Test gig',
-                description: 'Test description',
+                title: 'Test gig for validation',
+                description: 'Test description that is long enough for validation',
                 category: GigCategory.TECH,
                 type: GigType.FIND_HELP,
                 timeCreditsOffered: 30,
@@ -120,8 +121,8 @@ describe('Gig Service Edge Cases', () => {
 
         it('should handle confirmation on wrong gig status', () => {
             const gigData = {
-                title: 'Test gig',
-                description: 'Test description',
+                title: 'Test gig for confirmation',
+                description: 'Test description that is long enough for validation',
                 category: GigCategory.TECH,
                 type: GigType.FIND_HELP,
                 timeCreditsOffered: 30,
@@ -322,8 +323,8 @@ describe('Gig Service Edge Cases', () => {
     describe('Boundary Conditions', () => {
         it('should handle zero credit gig', () => {
             const zeroGig = {
-                title: 'Free gig',
-                description: 'No payment required',
+                title: 'Free gig for testing',
+                description: 'No payment required but long description for validation',
                 category: GigCategory.OTHER,
                 type: GigType.FIND_HELP,
                 timeCreditsOffered: 0,
@@ -388,8 +389,8 @@ describe('Gig Service Edge Cases', () => {
             };
 
             const expensiveGig = {
-                title: 'Very expensive gig',
-                description: 'Costs a lot',
+                title: 'Very expensive gig for testing',
+                description: 'Costs a lot but has proper description length',
                 category: GigCategory.TECH,
                 type: GigType.FIND_HELP,
                 timeCreditsOffered: 1000000,

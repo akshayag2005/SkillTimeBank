@@ -1,4 +1,6 @@
-import { Devvit } from '@devvit/kit';
+/** @jsx Devvit.createElement */
+/** @jsxFrag Devvit.Fragment */
+import { Devvit } from '@devvit/public-api';
 import { GigCategory, GigType } from '../types/gig.js';
 import { useTimebankState, saveState } from '../state/timebank.js';
 import { GigService } from '../services/gigService.js';

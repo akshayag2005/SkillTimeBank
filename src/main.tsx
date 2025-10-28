@@ -1,6 +1,7 @@
-import { Devvit } from '@devvit/kit';
-import { TimebankApp } from './components/TimebankApp.js';
-import './styles.css';
+/** @jsx Devvit.createElement */
+/** @jsxFrag Devvit.Fragment */
+import { Devvit } from '@devvit/public-api';
+import { App } from './app/App.js';
 
 // Configure Devvit
 Devvit.configure({
@@ -35,8 +36,8 @@ Devvit.addMenuItem({
 Devvit.addCustomPostType({
   name: 'Community Timebank',
   height: 'tall',
-  render: (context) => {
-    return <TimebankApp context={context} />;
+  render: () => {
+    return <App />;
   },
 });
 

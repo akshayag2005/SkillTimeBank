@@ -1,3 +1,6 @@
+/** @jsx Devvit.createElement */
+/** @jsxFrag Devvit.Fragment */
+import { Devvit } from '@devvit/public-api';
 import { TabType } from './TimebankApp.js';
 
 interface TabNavigationProps {

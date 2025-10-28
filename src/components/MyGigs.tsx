@@ -1,4 +1,6 @@
-import { Devvit } from '@devvit/kit';
+/** @jsx Devvit.createElement */
+/** @jsxFrag Devvit.Fragment */
+import { Devvit } from '@devvit/public-api';
 import { useTimebankState, saveState } from '../state/timebank.js';
 import { StatusChip } from './StatusChip.js';
 import { GigStatus, GigType } from '../types/gig.js';
@@ -233,7 +235,7 @@ export function MyGigs({ context }: MyGigsProps) {
               </vstack>
             ))
           )
-        ) : (
+        ) : activeTab === 'applied' ? (
           appliedGigs.length === 0 ? (
             <vstack alignment="center middle" padding="large">
               <text size="medium" color="#64748b">

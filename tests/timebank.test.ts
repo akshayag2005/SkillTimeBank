@@ -434,9 +434,9 @@ describe('GigService Unit Tests', () => {
         if (acceptResult.newState) {
           const startResult = GigService.startGig(acceptResult.newState, createResult.gigId, bob.id, mockContext);
           
-          if (acceptResult.newState) {
+          if (startResult.newState) {
             // First confirmation from ASSIGNED (sets to AWAITING_CONFIRMATION)
-            const firstConfirm = GigService.confirmGigCompletion(acceptResult.newState, createResult.gigId, alice.id, mockContext);
+            const firstConfirm = GigService.confirmGigCompletion(startResult.newState, createResult.gigId, alice.id, mockContext);
             expect(firstConfirm.success).toBe(true);
             
             if (firstConfirm.newState) {

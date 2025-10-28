@@ -16,6 +16,22 @@ export class GigService {
         return { success: false, error: 'User not found' };
       }
 
+      // Stricter validation: Title must be at least 10 characters
+      if (!gig.title || gig.title.trim().length < 10) {
+        return { 
+          success: false, 
+          error: 'Title must be at least 10 characters long' 
+        };
+      }
+
+      // Stricter validation: Description must be at least 20 characters
+      if (!gig.description || gig.description.trim().length < 20) {
+        return { 
+          success: false, 
+          error: 'Description must be at least 20 characters long' 
+        };
+      }
+
       // For FIND_HELP gigs, check if poster has sufficient balance
       if (gig.type === GigType.FIND_HELP && creator.timeCredits < gig.timeCreditsOffered) {
         return { 

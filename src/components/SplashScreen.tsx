@@ -1,3 +1,7 @@
+/** @jsx Devvit.createElement */
+/** @jsxFrag Devvit.Fragment */
+import { Devvit } from '@devvit/public-api';
+
 interface SplashScreenProps {
   onEnter: () => void;
   isLoading?: boolean;

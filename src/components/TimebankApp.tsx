@@ -1,4 +1,6 @@
-import { Devvit } from '@devvit/kit';
+/** @jsx Devvit.createElement */
+/** @jsxFrag Devvit.Fragment */
+import { Devvit } from '@devvit/public-api';
 import { SplashScreen } from './SplashScreen.js';
 import { BrowseGigs } from './BrowseGigs.js';
 import { MyGigs } from './MyGigs.js';

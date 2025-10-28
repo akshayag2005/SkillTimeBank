@@ -1,3 +1,6 @@
+/** @jsx Devvit.createElement */
+/** @jsxFrag Devvit.Fragment */
+import { Devvit } from '@devvit/public-api';
 import { GigStatus } from '../types/gig.js';
 
 interface StatusChipProps {

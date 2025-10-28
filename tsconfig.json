@@ -14,8 +14,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "resolveJsonModule": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "@devvit/kit"
+    "jsx": "react",
+    "jsxFactory": "Devvit.createElement",
+    "jsxFragmentFactory": "Devvit.Fragment"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
