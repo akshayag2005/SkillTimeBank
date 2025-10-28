@@ -7,7 +7,10 @@
     "build": "devvit build",
     "dev:run": "devvit run",
     "dev:upload": "devvit upload",
-    "test": "vitest"
+    "test": "vitest",
+    "admin:award-credit": "npx tsx src/scripts/award-credit.ts",
+    "admin:reset-economy": "npx tsx src/scripts/reset-economy.ts",
+    "admin:ban-user": "npx tsx src/scripts/ban-user.ts"
   },
   "keywords": ["devvit", "reddit", "timebank"],
   "author": "",
@@ -16,7 +19,8 @@
     "@devvit/kit": "^1.1.4",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^1.0.0",
+    "tsx": "^4.0.0"
   },
   "dependencies": {
     "tailwindcss": "^3.4.0",

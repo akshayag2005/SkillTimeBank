@@ -26,6 +26,23 @@ npm run dev:upload
 npm test
 ```
 
+## Admin Toolkit
+
+TimeBank includes administrative tools for community management:
+
+```bash
+# Award credits to users
+npm run admin:award-credit -- --username "john_doe" --amount 50 --reason "Community contribution"
+
+# Reset economy (not yet implemented)
+npm run admin:reset-economy -- --confirm-reset --backup-file ./backup.json
+
+# Ban users (not yet implemented)  
+npm run admin:ban-user -- --username "spammer" --reason "Inappropriate content"
+```
+
+See [docs/ADMIN_TOOLKIT.md](docs/ADMIN_TOOLKIT.md) for complete documentation.
+
 ## Project Structure
 
 - `src/types/` - TypeScript type definitions

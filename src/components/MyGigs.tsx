@@ -105,6 +105,8 @@ export function MyGigs({ context }: MyGigsProps) {
     switch (type) {
       case TransactionType.SIGNUP_BONUS:
         return '🎁 Signup Bonus';
+      case TransactionType.ADMIN_AWARD:
+        return '�  Admin Award';
       case TransactionType.GIG_PAYMENT:
         return '💰 Gig Payment';
       case TransactionType.BONUS:

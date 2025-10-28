@@ -14,6 +14,7 @@ export interface Transaction {
 export enum TransactionType {
   GIG_PAYMENT = 'gig_payment',
   SIGNUP_BONUS = 'signup_bonus',
+  ADMIN_AWARD = 'admin_award',
   BONUS = 'bonus',
   PENALTY = 'penalty',
   REFUND = 'refund'
