@@ -1,0 +1,27 @@
+{
+  "name": "community-timebank",
+  "version": "1.0.0",
+  "description": "A community timebank app for Reddit",
+  "main": "src/main.tsx",
+  "scripts": {
+    "build": "devvit build",
+    "dev:run": "devvit run",
+    "dev:upload": "devvit upload",
+    "test": "vitest"
+  },
+  "keywords": ["devvit", "reddit", "timebank"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@devvit/kit": "^1.1.4",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.4.0",
+    "@tailwindcss/forms": "^0.5.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
+  }
+}
